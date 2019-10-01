@@ -32,8 +32,9 @@ public class Find extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()){
                     for(DataSnapshot snapshot:dataSnapshot.getChildren()) {
-                        Staff staff=snapshot.getValue(Staff.class);
-                        txt.setText(staff.sname);
+                      //  Staff staff=snapshot.getValue(Staff.class);
+                        String stf=snapshot.child("images").child("img1").child("image").getValue().toString();
+                        txt.setText(stf);
                     }
 
                 }
