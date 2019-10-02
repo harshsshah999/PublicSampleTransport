@@ -10,35 +10,47 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Picasso;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class Find extends AppCompatActivity {
 
-    DatabaseReference db;
-    ImageView img;
-    TextView txt;
-    @Override
+     TextView texturl;
+     ImageView image;
+
+    private DatabaseReference ref;
+    // Query query=reference.orderByChild("sno").orderByChild().orderByChild().equalTo();
+    private int count;
+
+
+
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_find);
-        img=(ImageView) findViewById(R.id.imageView);
-        txt=findViewById(R.id.textView);
-        db= FirebaseDatabase.getInstance().getReference("staff");
-        Query query=db.orderByChild("sno").equalTo(1);
+        image=(ImageView)findViewById(R.id.image);
+        ref=FirebaseDatabase.getInstance().getReference("staff");
+        Query query=ref.orderByChild("sno").equalTo(1);
+
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
-                    for(DataSnapshot snapshot:dataSnapshot.getChildren()) {
-                      //  Staff staff=snapshot.getValue(Staff.class);
-                        String stf=snapshot.child("images").child("img1").child("image").getValue().toString();
-                        txt.setText(stf);
+                if (dataSnapshot.exists()){
+                    for (DataSnapshot snapshot:dataSnapshot.getChildren()){ 
+//                        count=1;
+//                        while (true)
+//                        {
+
+                        String staff= snapshot.child("images").child("img1").child("image").getValue().toString();
+                        texturl.setText(staff);
+                        Picasso.get().load(staff).into(image);
+
+                        // count++;
+                        //}
                     }
-
                 }
-
             }
 
             @Override
@@ -47,4 +59,10 @@ public class Find extends AppCompatActivity {
             }
         });
     }
+
+
+
+
+
 }
+

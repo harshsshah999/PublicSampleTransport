@@ -1,6 +1,7 @@
 package com.orka.publicsampletransport;
 
 import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -28,6 +29,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class Capture extends AppCompatActivity {
+    private Uri picUri;
+    final int CROP_PIC = 2;
+
     int no=1;
     private Button mButton,btn;
     private ImageButton mim;
@@ -80,6 +84,35 @@ public class Capture extends AppCompatActivity {
         dbRef.child(id).child("images").child("img"+no).child("image").setValue(iref);
 
     }
+
+    private void performCrop() {
+        // take care of exceptions
+        try {
+            // call the standard crop action intent (the user device may not
+            // support it)
+            Intent cropIntent = new Intent("com.android.camera.action.CROP");
+            // indicate image type and Uri
+            cropIntent.setDataAndType(picUri, "image/*");
+            // set crop properties
+            cropIntent.putExtra("crop", "true");
+            // indicate aspect of desired crop
+            cropIntent.putExtra("aspectX", 2);
+            cropIntent.putExtra("aspectY", 1);
+            // indicate output X and Y
+            cropIntent.putExtra("outputX", 256);
+            cropIntent.putExtra("outputY", 256);
+            // retrieve data on return
+            cropIntent.putExtra("return-data", true);
+            // start the activity - we handle returning in onActivityResult
+            startActivityForResult(cropIntent, CROP_PIC);
+        }
+        // respond to users whose devices do not support the crop action
+        catch (ActivityNotFoundException anfe) {
+            Toast toast = Toast
+                    .makeText(this, "This device doesn't support the crop action!", Toast.LENGTH_SHORT);
+            toast.show();
+        }
+    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -91,8 +124,10 @@ public class Capture extends AppCompatActivity {
             Uri uri = data.getData();
           //  if (uri == null) {
                // StorageReference filepath = mStorage.child("Photos.jpg");
-                Bitmap photo = (Bitmap) data.getExtras().get("data");
+               Bitmap photo = (Bitmap) data.getExtras().get("data");
                 uri=getImageUri(this,photo);
+                picUri=uri;
+                performCrop();
                 final StorageReference filepath;
                 mim.setImageURI(uri);
                 filepath = mStorage.child("pics/pic1");
