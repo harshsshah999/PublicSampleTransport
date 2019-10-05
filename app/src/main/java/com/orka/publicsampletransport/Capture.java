@@ -7,12 +7,14 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -20,14 +22,18 @@ import com.google.firebase.database.ServerValue;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.yalantis.ucrop.UCrop;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class Capture extends AppCompatActivity {
+    private Uri picUri;
+    final int CROP_PIC = 2;
+
     int no=1;
     private Button mButton,btn;
     private ImageButton mim;
@@ -80,8 +86,23 @@ public class Capture extends AppCompatActivity {
         dbRef.child(id).child("images").child("img"+no).child("image").setValue(iref);
 
     }
+
+    private void performCrop() {
+        // take care of exceptions
+        UCrop uCrop= UCrop.of(picUri,Uri.fromFile(new File(getCacheDir(),"first.jpg")));
+        uCrop.withMaxResultSize(1024,1024);
+        uCrop.withOptions(getCropOptions());
+        uCrop.start(this,CROP_PIC);
+    }
+    private UCrop.Options getCropOptions(){
+        UCrop.Options options= new UCrop.Options();
+        options.setCompressionQuality(95);
+        options.setHideBottomControls(false);
+        options.setFreeStyleCropEnabled(true);
+        return options;
+    }
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode,  Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if(requestCode==CAMERA_REQUEST_CODE && resultCode==RESULT_OK) {
@@ -91,9 +112,12 @@ public class Capture extends AppCompatActivity {
             Uri uri = data.getData();
           //  if (uri == null) {
                // StorageReference filepath = mStorage.child("Photos.jpg");
-                Bitmap photo = (Bitmap) data.getExtras().get("data");
+               Bitmap photo = (Bitmap) data.getExtras().get("data");
                 uri=getImageUri(this,photo);
-                final StorageReference filepath;
+                picUri=uri;
+                Log.d("picUri",picUri.toString());
+                performCrop();
+             /*   final StorageReference filepath;
                 mim.setImageURI(uri);
                 filepath = mStorage.child("pics/pic1");
                 filepath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -128,7 +152,7 @@ public class Capture extends AppCompatActivity {
                         mprog.dismiss();
                     }
                 });
-              /*  mim.setImageBitmap(photo);
+                mim.setImageBitmap(photo);
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 photo.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                 byte[] dat = baos.toByteArray();
@@ -177,6 +201,77 @@ public class Capture extends AppCompatActivity {
                 }
             });
             }*/
+        }
+        else if (requestCode == CROP_PIC && resultCode==RESULT_OK) {
+            // get the returned data
+            Uri urii=UCrop.getOutput(data);
+
+
+         if(urii!=null){
+
+             mim.setImageURI(urii);
+
+             final StorageReference filepath;
+             //     mim.setImageURI(uri);
+             filepath = mStorage.child("pics/pic1");
+             filepath.putFile(urii).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                 @Override
+                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                     String name="Harsh";
+
+                     Staff staff = new Staff(name,no);
+                     dbRef.child(id).setValue(staff);
+                     filepath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                         @Override
+                         public void onSuccess(Uri urk) {
+                             final String imgref=urk.toString();
+                             getString(imgref);
+
+                         }
+                     });
+
+
+
+
+                     dbRef.child(id).child("images").child("img"+no).child("Info").setValue(info.getText().toString());
+                     dbRef.child(id).child("images").child("img"+no).child("Timestamp").setValue(ServerValue.TIMESTAMP);
+                     mprog.dismiss();
+                     Toast.makeText(Capture.this, "Uploading Finished...", Toast.LENGTH_SHORT).show();
+                     dbRef.child(id).child("images").child("img"+no).child("image").setValue(iref);
+
+
+                 }
+                 public void onFailure(@NonNull Exception exception) {
+                     // Handle unsuccessful uploads
+                     mprog.dismiss();
+                 }
+             });
+           //  mim.setImageBitmap(photo);
+             ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        //     photo.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+             byte[] dat = baos.toByteArray();
+
+             UploadTask uploadTask = filepath.putBytes(dat);
+             uploadTask.addOnFailureListener(new OnFailureListener() {
+                 @Override
+                 public void onFailure(@NonNull Exception exception) {
+                     // Handle unsuccessful uploads
+                     mprog.dismiss();
+                 }
+             }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                 @Override
+                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                     // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
+                     // ...
+                     mprog.dismiss();
+                     Toast.makeText(Capture.this, "Uploading Finished...", Toast.LENGTH_SHORT).show();
+                 }
+
+             });
+
+         }else{
+             Log.d("asd","as"+urii.toString());
+         }
         }
     }
 }
