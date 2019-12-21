@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void goToLogin(){
         finish();
-        startActivity(new Intent(getApplicationContext(),Login.class));
+        startActivity(new Intent(getApplicationContext(),Login_Option.class));
     }
 
     @Override

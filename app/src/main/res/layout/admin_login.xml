@@ -4,39 +4,37 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Find">
+    tools:context=".Login">
 
-    
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
         android:orientation="vertical"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:layout_editor_absoluteY="0dp">
+        android:gravity="center"
+        >
 
-        <ImageView
-            android:id="@+id/image"
+        <EditText
+            android:layout_margin="15dp"
+            android:id="@+id/emailFieldL"
             android:layout_width="match_parent"
-            android:layout_height="255dp"
-            android:layout_marginTop="0dp"
-            android:padding="20dp">
-
-        </ImageView>
-
-        <TextView
-            android:id="@+id/texturl"
+            android:layout_height="wrap_content"
+            android:hint="Enter Your Email" />
+        <EditText
+            android:layout_margin="15dp"
+            android:id="@+id/passFieldL"
             android:layout_width="match_parent"
-            android:layout_height="97dp"
-            ></TextView>
-
-        <TextView
-            android:id="@+id/info"
+            android:layout_height="wrap_content"
+            android:hint="Password" />
+        <Button
             android:layout_width="match_parent"
-            android:layout_height="103dp"></TextView>
-
+            android:layout_height="wrap_content"
+            android:id="@+id/login"
+            android:text="Login"
+            android:layout_margin="15dp"
+            />
 
     </LinearLayout>
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

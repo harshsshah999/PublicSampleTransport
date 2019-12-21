@@ -20,9 +20,10 @@
         <activity android:name=".Find"></activity>
         <activity android:name=".Capture" />
         <activity android:name=".Login" />
-        <activity
-            android:name=".LoginActivity"
-            android:label="@string/title_activity_login" />
+        <activity android:name=".Login_Option"/>
+        <activity android:name=".AdminLogin"/>
+        <activity android:name=".AdminDisplayRecords"></activity>
+
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
