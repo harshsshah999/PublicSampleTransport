@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
@@ -26,9 +27,11 @@ import com.yalantis.ucrop.UCrop;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 
 public class Capture extends AppCompatActivity {
     private Uri picUri;
@@ -45,6 +48,8 @@ public class Capture extends AppCompatActivity {
     private static final int CAMERA_REQUEST_CODE=1;
     private DatabaseReference dbRef;
     private String id;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         iref="";
@@ -62,8 +67,9 @@ public class Capture extends AppCompatActivity {
         mButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent=new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                startActivityForResult(intent,CAMERA_REQUEST_CODE);
+               // Intent intent=new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                //startActivityForResult(intent,CAMERA_REQUEST_CODE);
+                dispatchTakePictureIntent();
             }
         });
         btn.setOnClickListener(new View.OnClickListener() {
@@ -74,29 +80,77 @@ public class Capture extends AppCompatActivity {
         });
     }
 
+    String currentPhotoPath;
+
+    static final int REQUEST_TAKE_PHOTO = 1;
+
+    private void dispatchTakePictureIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        // Ensure that there's a camera activity to handle the intent
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            // Create the File where the photo should go
+            File photoFile = null;
+            try {
+                photoFile = createImageFile();
+            } catch (IOException ex) {
+                // Error occurred while creating the File
+           // ...
+            }
+            // Continue only if the File was successfully created
+            if (photoFile != null) {
+
+                Uri photoURI = FileProvider.getUriForFile(this,
+                        "com.orka.publicsampletransport.fileprovider",
+                        photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+            }
+        }
+    }
+
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = "asd";//new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        currentPhotoPath = image.getAbsolutePath();
+        File f = new File(currentPhotoPath);
+         picUri = Uri.fromFile(f);
+         performCrop();
+        Log.d("createImageFilsdf: ",currentPhotoPath);
+        return image;
+    }
+
     private Uri getImageUri(Context context, Bitmap inImage) {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+       // inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
         String path = MediaStore.Images.Media.insertImage(context.getContentResolver(), inImage, "Title", null);
         return Uri.parse(path);
     }
 
     public void getString(final String s){
         iref=s;
-        dbRef.child(id).child("images").child("img"+no).child("image").setValue(iref);
+        dbRef.child(id).child("image").setValue(iref);
 
     }
 
     private void performCrop() {
         // take care of exceptions
-        UCrop uCrop= UCrop.of(picUri,Uri.fromFile(new File(getCacheDir(),"first.jpg")));
-        uCrop.withMaxResultSize(1024,1024);
+        UCrop uCrop= UCrop.of(picUri,Uri.fromFile(new File(getCacheDir(),"first.jpeg")));
+        //uCrop.withMaxResultSize(2048,2048);
         uCrop.withOptions(getCropOptions());
         uCrop.start(this,CROP_PIC);
     }
     private UCrop.Options getCropOptions(){
         UCrop.Options options= new UCrop.Options();
-        options.setCompressionQuality(95);
+       // options.setCompressionQuality(95);
         options.setHideBottomControls(false);
         options.setFreeStyleCropEnabled(true);
         return options;
@@ -106,7 +160,7 @@ public class Capture extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if(requestCode==CAMERA_REQUEST_CODE && resultCode==RESULT_OK) {
-
+/*
              mprog.setMessage("Uploading Image...");
             mprog.show();
             Uri uri = data.getData();
@@ -114,9 +168,15 @@ public class Capture extends AppCompatActivity {
                // StorageReference filepath = mStorage.child("Photos.jpg");
                Bitmap photo = (Bitmap) data.getExtras().get("data");
                 uri=getImageUri(this,photo);
+                mim.setImageBitmap(photo);
                 picUri=uri;
                 Log.d("picUri",picUri.toString());
                 performCrop();
+
+
+
+
+                /*
              /*   final StorageReference filepath;
                 mim.setImageURI(uri);
                 filepath = mStorage.child("pics/pic1");
@@ -233,12 +293,16 @@ public class Capture extends AppCompatActivity {
 
 
 
-                     dbRef.child(id).child("images").child("img"+no).child("Info").setValue(info.getText().toString());
+                /*     dbRef.child(id).child("images").child("img"+no).child("Info").setValue(info.getText().toString());
                      dbRef.child(id).child("images").child("img"+no).child("Timestamp").setValue(ServerValue.TIMESTAMP);
                      mprog.dismiss();
                      Toast.makeText(Capture.this, "Uploading Finished...", Toast.LENGTH_SHORT).show();
-                     dbRef.child(id).child("images").child("img"+no).child("image").setValue(iref);
-
+                     dbRef.child(id).child("images").child("img"+no).child("image").setValue(iref);*/
+                     dbRef.child(id).child("info").setValue(info.getText().toString());
+                     dbRef.child(id).child("timestamp").setValue(ServerValue.TIMESTAMP);
+                     mprog.dismiss();
+                     Toast.makeText(Capture.this, "Uploading Finished...", Toast.LENGTH_SHORT).show();
+                     dbRef.child(id).child("image").setValue(iref);
 
                  }
                  public void onFailure(@NonNull Exception exception) {

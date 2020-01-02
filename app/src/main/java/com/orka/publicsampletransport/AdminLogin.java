@@ -9,12 +9,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class AdminLogin extends AppCompatActivity implements View.OnClickListener {
@@ -54,8 +50,13 @@ public class AdminLogin extends AppCompatActivity implements View.OnClickListene
         }
 
 
-        ps.show();
-        firebaseAuth.signInWithEmailAndPassword(email,pwd).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+       // ps.show();
+        if(email=="admin" || pwd=="admin"){
+            Toast.makeText(this," "+email+" "+pwd,Toast.LENGTH_SHORT).show();
+            finish();
+            startActivity(new Intent(getApplicationContext(),AdminDisplayRecords.class));
+        }
+     /*   firebaseAuth.signInWithEmailAndPassword(email,pwd).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 ps.dismiss();
@@ -64,13 +65,25 @@ public class AdminLogin extends AppCompatActivity implements View.OnClickListene
                     startActivity(new Intent(getApplicationContext(),AdminDisplayRecords.class));
                 }
             }
-        });
+        });*/
     }
 
     @Override
     public void onClick(View view) {
         if(view==Log){
-            userlogin();
+            if(Lid.getText().toString().equals("admin") &&
+                    Lpass.getText().toString().equals("admin")) {
+                Toast.makeText(getApplicationContext(),
+                        "Redirecting...",Toast.LENGTH_SHORT).show();
+                finish();
+                startActivity(new Intent(getApplicationContext(),AdminDisplayRecords.class));
+
+            }
+            else{
+                Toast.makeText(getApplicationContext(),
+                        "Wrong ID/PASSWORD",Toast.LENGTH_SHORT).show();
+            }
+            //userlogin();
         }
     }
 }
