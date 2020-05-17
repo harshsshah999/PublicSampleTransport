@@ -17,10 +17,13 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.yalantis.ucrop.UCrop;
@@ -28,6 +31,8 @@ import com.yalantis.ucrop.UCrop;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.util.Calendar;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -110,7 +115,9 @@ public class Capture extends AppCompatActivity {
 
     private File createImageFile() throws IOException {
         // Create an image file name
-        String timeStamp = "asd";//new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        Calendar calendar = Calendar.getInstance();
+
+        String timeStamp = DateFormat.getDateTimeInstance().format(calendar.getTime());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(
@@ -270,21 +277,35 @@ public class Capture extends AppCompatActivity {
          if(urii!=null){
 
              mim.setImageURI(urii);
+             Calendar calendarr = Calendar.getInstance();
 
+             String timeStamp = DateFormat.getDateTimeInstance().format(calendarr.getTime());
              final StorageReference filepath;
              //     mim.setImageURI(uri);
-             filepath = mStorage.child("pics/pic1");
+             filepath = mStorage.child("pics/pic"+timeStamp);
              filepath.putFile(urii).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                  @Override
                  public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                     String name="Harsh";
+                     String name;
+                     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                     if (user != null) {
+                        name = user.getEmail();
+                     } else {
+                         // No user is signed in
+                          name="Default Employee";
+                     }
+
 
                      Staff staff = new Staff(name,no);
                      dbRef.child(id).setValue(staff);
                      filepath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                          @Override
                          public void onSuccess(Uri urk) {
-                             final String imgref=urk.toString();
+
+                             Calendar calendarr = Calendar.getInstance();
+
+                             String timeStamp = DateFormat.getDateTimeInstance().format(calendarr.getTime());
+                             final String imgref=urk.toString()+timeStamp;
                              getString(imgref);
 
                          }
@@ -314,8 +335,10 @@ public class Capture extends AppCompatActivity {
              ByteArrayOutputStream baos = new ByteArrayOutputStream();
         //     photo.compress(Bitmap.CompressFormat.JPEG, 100, baos);
              byte[] dat = baos.toByteArray();
-
-             UploadTask uploadTask = filepath.putBytes(dat);
+             StorageMetadata metadata = new StorageMetadata.Builder()
+                     .setContentType("image/jpg")
+                     .build();
+             UploadTask uploadTask = filepath.putBytes(dat, metadata);
              uploadTask.addOnFailureListener(new OnFailureListener() {
                  @Override
                  public void onFailure(@NonNull Exception exception) {

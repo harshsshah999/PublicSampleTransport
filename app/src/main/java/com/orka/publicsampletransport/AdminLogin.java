@@ -75,7 +75,7 @@ public class AdminLogin extends AppCompatActivity implements View.OnClickListene
                     Lpass.getText().toString().equals("admin")) {
                 Toast.makeText(getApplicationContext(),
                         "Redirecting...",Toast.LENGTH_SHORT).show();
-                finish();
+         //       finish();
                 startActivity(new Intent(getApplicationContext(),AdminDisplayRecords.class));
 
             }

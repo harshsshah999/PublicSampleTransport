@@ -4,8 +4,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -35,7 +33,7 @@ public class AdminDisplayRecords extends AppCompatActivity {
     // Query query=reference.orderByChild("sno").orderByChild().orderByChild().equalTo();
     private int count;
 
-    private Button insertButton;
+    //private Button insertButton;
     ArrayList<ExampleItem> exampleList=new ArrayList<>();
 
 
@@ -46,10 +44,9 @@ public class AdminDisplayRecords extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_find);
 
-        createExampleList();
+       // createExampleList();
         buildRecyclerView();
 
-        insertButton=findViewById(R.id.insert);
 
         emp=(TextView) findViewById(R.id.texturl);
         info=(TextView)findViewById(R.id.info);
@@ -58,12 +55,6 @@ public class AdminDisplayRecords extends AppCompatActivity {
         Query query=ref.orderByChild("sno").equalTo(1);
 
 
-        insertButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-            }
-        });
 
 
         query.addListenerForSingleValueEvent(new ValueEventListener() {

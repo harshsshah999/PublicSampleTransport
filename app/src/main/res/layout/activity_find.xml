@@ -30,13 +30,7 @@
 
         </androidx.recyclerview.widget.RecyclerView>
 
-        <Button
-            android:id="@+id/insert"
-            android:layout_width="200dp"
-            android:layout_height="50dp"
-           android:layout_alignParentBottom="true"
-            android:text="INSERT"
-            />
+
 
     </RelativeLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
